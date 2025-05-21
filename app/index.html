@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaderboard Demo</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 500px;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .container {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Leaderboard</h2>
+
+        <!-- Update Score Form -->
+        <div>
+            <h3>Update Score</h3>
+            <input type="number" id="playerId" placeholder="Player ID">
+            <input type="number" id="score" placeholder="Score">
+            <button onclick="updateScore()">Update</button>
+        </div>
+
+        <!-- Leaderboard Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Player ID</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboardBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api/v1/leaderboard';
+
+        // Fetch and display leaderboard
+        async function fetchLeaderboard() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                const tbody = document.getElementById('leaderboardBody');
+                tbody.innerHTML = '';
+
+                data.forEach(item => {
+                    const row = `
+                        <tr>
+                            <td>${item.player_id}</td>
+                            <td>${item.score}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Update score
+        async function updateScore() {
+            const playerId = document.getElementById('playerId').value;
+            const score = document.getElementById('score').value;
+
+            try {
+                const response = await fetch(`${API_URL}/update-score?player_id=${playerId}&score=${score}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                console.log('Update response:', data);
+                fetchLeaderboard(); // Refresh the leaderboard
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Initial load
+        fetchLeaderboard();
+        // Refresh every 5 seconds
+        setInterval(fetchLeaderboard, 10000);
+    </script>
+</body>
+</html>
